@@ -3,5 +3,31 @@ title: "edible_plants_database"
 format: html
 ---
 
-## Quarto
+```{r}
+#| echo: false
+
+library(tidyverse)
+library(tidytuesdayR)
+```
+
+## Getting the data
+
+```{r}
+#| label: get_data_function
+
+get_data <- function(date, dataset_name){
+  
+  df <- tidytuesdayR::tt_load(date)
+  
+  df[[dataset_name]]
+
+}
+```
+
+```{r}
+#| label: getting_data
+#| include: false
+
+edible_plants <- get_data("2026-02-03", "edible_plants")
+```
 
