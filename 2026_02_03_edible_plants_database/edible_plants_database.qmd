@@ -31,3 +31,36 @@ get_data <- function(date, dataset_name){
 edible_plants <- get_data("2026-02-03", "edible_plants")
 ```
 
+## Do plants that require more sunlight also require higher temperatures?
+
+```{r}
+extract_temp_midpoint <- function(temp_string) {
+
+  temp_min <- as.numeric(str_extract(temp_string, "^\\d+"))
+
+  temp_max <- as.numeric(str_extract(temp_string, "(?<=-)\\d+$"))
+  
+  temp_clean <- if_else(is.na(temp_max), temp_min, (temp_min + temp_max) / 2)
+  
+  return(temp_clean)
+}
+```
+
+
+```{r}
+edible_plants <- edible_plants |> 
+  
+  mutate(sunlight = recode(sunlight,
+                           "partial shade"                      = "Partial shade",
+                           "full sun/partial shade/ full shade" = "Full sun/partial shade/full shade"
+                           ),
+         sunlight = fct_relevel(sunlight),
+         germ_temp = extract_temp_midpoint(temperature_germination),
+         grow_temp = extract_temp_midpoint(temperature_growing)
+         )
+```
+
+```{r}
+
+```
+
