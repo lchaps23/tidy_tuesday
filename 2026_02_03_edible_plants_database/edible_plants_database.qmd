@@ -61,6 +61,8 @@ edible_plants <- edible_plants |>
 ```
 
 ```{r}
+res.aov <- aov(grow_temp ~ sunlight, data = edible_plants)
 
+broom::tidy(res.aov)
 ```
 
