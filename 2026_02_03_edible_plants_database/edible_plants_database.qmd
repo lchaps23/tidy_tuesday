@@ -8,6 +8,7 @@ format: html
 
 library(tidyverse)
 library(tidytuesdayR)
+library(ggpubr)
 ```
 
 ## Getting the data
@@ -45,7 +46,6 @@ extract_temp_midpoint <- function(temp_string) {
   return(temp_clean)
 }
 ```
-
 
 ```{r}
 edible_plants <- edible_plants |> 
