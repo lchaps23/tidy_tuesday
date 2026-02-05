@@ -48,6 +48,26 @@ extract_temp_midpoint <- function(temp_string) {
 ```
 
 ```{r}
+sunlight_temp_avgs <- function(df){
+  
+  df |> 
+    
+    group_by(sunlight) |> 
+    
+    summarise(
+      n_plants = n(),
+      mean_grow_temp = round(mean(grow_temp, na.rm = TRUE), 2),
+      sd_grow_temp   = round(sd(grow_temp, na.rm = TRUE), 2),
+      mean_germ_temp = round(mean(germ_temp, na.rm = TRUE), 2),
+      sd_germ_temp   = round(sd(germ_temp, na.rm = TRUE), 2)
+    ) |> 
+    
+    drop_na(sunlight)
+}
+```
+
+
+```{r}
 edible_plants <- edible_plants |> 
   
   mutate(sunlight = recode(sunlight,
@@ -59,6 +79,11 @@ edible_plants <- edible_plants |>
          grow_temp = extract_temp_midpoint(temperature_growing)
          )
 ```
+
+```{r}
+sunlight_temp_avgs(edible_plants)
+```
+
 
 ```{r}
 res.aov <- aov(grow_temp ~ sunlight, data = edible_plants)
