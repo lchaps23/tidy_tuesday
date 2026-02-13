@@ -50,3 +50,6 @@ rsconnect/
 
 # renv .json files
 *.json
+
+# Quarto .html files
+*.html
