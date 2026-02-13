@@ -10,11 +10,15 @@ embed-resources: true
 ---
 
 ```{r}
+#| label: setup
 #| include: false
 
 library(tidyverse)
 library(tidytuesdayR)
 library(DT)
+library(lubridate)
+library(janitor)
+library(forcats)
 ```
 
 # Getting the data
@@ -32,6 +36,7 @@ get_data <- function(date, dataset_name){
 
 ```{r}
 #| label: getting_data
+#| message: false
 
 winter_olympics_26 <- get_data("2026-02-10", "schedule")
 ```
@@ -56,15 +61,113 @@ winter_olympics_26 |>
   
   arrange(desc(events)) |> 
   
-  DT::datatable(
+  datatable(
     
     colnames = c("Discipline Name"        = 2,
                  "Events Scheduled"       = 3,
                  "Medal Events Scheduled" = 4,
-                 "Medal Events %"         = 5),
-    
-    
+                 "Medal Events %"         = 5)
+  )
+```
+
+# How are medal events distributed across the days of the Olympics?
+
+## Medal Events
+
+```{r}
+#| label: medal_events
+
+medal_events <- winter_olympics_26 |> 
+  
+  filter(is_medal_event == "TRUE") |> 
+  
+  select(
+    date,
+    discipline_code,
+    discipline_name,
+    event_description
   )
 
+medal_events |> 
+  
+    datatable(
+    
+    colnames = c("Medal Event Date"  = 2,
+                 "Discipline Code"   = 3,
+                 "Discipline Name"   = 4,
+                 "Event Description" = 5)
+  )
+```
+
+## Medal Events per Day
+
+```{r}
+#| label: medal_events_per_day
+
+medal_events_days <- medal_events |> 
+  
+  count(date, discipline_code, discipline_name, name = "n")
+
+
+medal_events_days |> 
+  
+  group_by(date) |> 
+  
+  summarise(medal_events = sum(n)) |> 
+  
+  rename("Date" = date,
+         "Medal Events" = medal_events)
+```
+
+
+```{r}
+#| label: medal_events_per_day_plot
+#| fig-width: 8
+#| fig-height: 6
+
+# Ordering disciplines by their earliest medal event
+discipline_order <- medal_events_days |> 
+  
+  group_by(discipline_code) |> 
+  
+  summarise(earliest_date = min(date)) |> 
+  
+  arrange(earliest_date) |> 
+  
+  pull(discipline_code)
+
+# Creating the tile plot
+medal_events_days |> 
+  
+  mutate(discipline_code = factor(discipline_code, levels = rev(discipline_order))) |>
+  
+  ggplot(aes(x = date, y = discipline_code, fill = n)) +
+  
+  geom_tile(colour = "white",
+            linewidth = 0.2) +
+  
+  geom_text(aes(label = n),
+            color = "white") +
+  
+  scale_fill_viridis_c(name = "Medal Events") +
+  
+  scale_x_date(
+        breaks = seq(min(medal_events_days$date),
+                 max(medal_events_days$date),
+                 by = "1 day"),
+        
+        date_labels = "%d %b") +
+  
+  labs(
+    title = "Distribution of Medal Events Across the 2026 Milano-Cortina Winter Olympics",
+    x     = "Date",
+    y     = "Discipline"
+  ) +
+  
+  theme(
+    axis.text.x = element_text(angle = 50, hjust = 1),
+    panel.grid.major = element_blank(),
+    panel.background = element_blank()
+  )
 ```
 
