@@ -7,6 +7,7 @@ toc-depth: 3
 number-sections: true
 number-depth: 3
 embed-resources: true
+dpi: 900
 ---
 
 ```{r}
@@ -20,6 +21,7 @@ library(lubridate)
 library(janitor)
 library(forcats)
 library(ggridges)
+library(NatParksPalettes)
 ```
 
 # Getting the data
@@ -253,10 +255,7 @@ event_durations |>
     alpha = 0.8
   ) +
   
-  scale_fill_viridis_c(
-    name = "Duration (mins)",
-    option = "plasma"
-  ) +
+  scale_fill_gradientn(colors = natparks.pals("Glacier")) +
   
   labs(
     title = "Distribution of Event Durations Across Olympic Disciplines",
@@ -330,12 +329,12 @@ winter_olympics_26 |>
     
   ggplot(aes(x = n, y = venue_code)) +
     
-  geom_col(fill = "magenta4", alpha = 0.8) +
+  geom_col(fill = "royalblue4") +
   
   geom_text(aes(label = n),
-            color = "white",
-            hjust = 1.4,
-            size = 4) +
+            hjust = 1.2,
+            size = 4,
+            color = "white") +
     
   labs(
     title = "Distribution of Events Across Olympic Venues",
@@ -354,7 +353,207 @@ winter_olympics_26 |>
     
     axis.text.y = element_text(vjust = 0.5, size = 11),
     axis.text.x = element_text(size = 10),
-    axis.title.x = element_text(margin = margin(t = 10), size = 12),
+    axis.title.x = element_text(size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
+
+# How does the schedule vary by day of the week?
+
+## Events per Day
+
+```{r}
+#| label: events_per_day
+
+day_events <- winter_olympics_26 |> 
+  
+  mutate(day = wday(date, label = TRUE, abbr = TRUE)) |> 
+  
+  group_by(day) |> 
+  
+  summarise(
+    events = n(),
+    medal_events = sum(is_medal_event[TRUE]),
+    medal_pct = round((medal_events / events) * 100, 1),
+    training_events = sum(is_training[TRUE]),
+    training_pct = round((training_events / events) * 100, 1),
+    .groups = "drop"
+  )
+
+day_events
+```
+
+```{r}
+#| label: events_per_day_plot
+#| fig-height: 6
+#| fig-width: 8
+
+day_events |> 
+  
+  ggplot(aes(x = day, y = events)) +
+  
+  geom_col(fill = "royalblue4") +
+  
+  geom_text(aes(label = events),
+            vjust = 2,
+            size = 4,
+            color = "white") +
+    
+  labs(
+    title = "Total Olympic Event Volume by Day",
+    subtitle = "Milano-Cortina Winter Olympics 2026",
+    x = NULL,
+    y = "Total Events",
+    caption = "Data: Milano-Cortina 2026"
+  ) +
+    
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0.5, size = 11),
+    axis.text.x = element_text(size = 10),
+    axis.title.x = element_text(size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
+
+## The Nature of the Daily Schedule
+
+```{r}
+#| label: event_types_per_day_plot
+#| fig-height: 6
+#| fig-width: 8
+
+day_events |> 
+  
+  pivot_longer(cols = c(medal_events, training_events),
+               names_to = "event_type",
+               values_to = "count"
+  ) |> 
+  
+  ggplot(aes(x = day, y = count, fill = event_type)) +
+  
+  geom_col(position = "dodge") +
+  
+  geom_line() +
+  
+  geom_text(aes(label = count),
+            position = position_dodge(width = 0.9),
+            vjust = 2,
+            size = 4
+            ) +
+  
+  scale_fill_manual(
+    values = c("medal_events" = "gold2",
+               "training_events" = "grey70"),
+    labels = c("Medal Events", "Training Events"),
+    name = "Event Type"
+  ) +
+  
+  labs(
+    title = "Medal Events vs Training Events Across the Week",
+    subtitle = "Milano-Cortina Winter Olympics 2026",
+    x = NULL,
+    y = "Number of Events",
+    caption = "Data: Milano-Cortina 2026"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0.5, size = 11),
+    axis.text.x = element_text(size = 10),
+    axis.title.x = element_text(size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
+
+## The Intensity Slope
+
+```{r}
+#| label: intensity_slope_plot
+#| fig-height: 6
+#| fig-width: 8
+
+day_events |> 
+  
+  ggplot(aes(x = day, group = 1)) +
+  
+  geom_line(aes(y = medal_pct, color = "Medal %"), 
+            linewidth = 1.2) +
+  
+  geom_line(aes(y = training_pct, color = "Training %"),
+            linewidth = 1.2) +
+  
+  geom_point(aes(y = medal_pct, color = "Medal %"),
+             size = 3) +
+  
+  geom_point(aes(y = training_pct, color = "Training %"),
+             size = 3) +
+  
+  scale_color_manual(values = c("Medal %" = "gold2", 
+                                "Training %" = "grey70"),
+                     name = "Event Type %") +
+  
+  labs(
+    title = "The Intensity Slope",
+    subtitle = "Milano-Cortina Winter Olympics 2026",
+    x = NULL,
+    y = "% of Events",
+    caption = "Data: Milano-Cortina 2026"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0.5, size = 11),
+    axis.text.x = element_text(size = 10),
+    axis.title.x = element_text(size = 12),
     
     panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank(),
