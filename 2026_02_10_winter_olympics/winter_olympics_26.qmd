@@ -19,6 +19,7 @@ library(DT)
 library(lubridate)
 library(janitor)
 library(forcats)
+library(ggridges)
 ```
 
 # Getting the data
@@ -119,6 +120,7 @@ medal_events_days |>
          "Medal Events" = medal_events)
 ```
 
+## Visualising Medal Events Distribution
 
 ```{r}
 #| label: medal_events_per_day_plot
@@ -159,15 +161,129 @@ medal_events_days |>
         date_labels = "%d %b") +
   
   labs(
-    title = "Distribution of Medal Events Across the 2026 Milano-Cortina Winter Olympics",
+    title = "Distribution of Olympic Medal Events",
+    subtitle = "Milano-Cortina 2026 Winter Olympics",
     x     = "Date",
-    y     = "Discipline"
+    y     = "Discipline",
+    caption = "Data: Milano-Cortina 2026"
   ) +
   
+  theme_minimal(base_size = 13) +
+  
   theme(
-    axis.text.x = element_text(angle = 50, hjust = 1),
-    panel.grid.major = element_blank(),
-    panel.background = element_blank()
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0, size = 11),
+    axis.text.x = element_text(size = 10, angle = 90, vjust = 0.2),
+    axis.title.x = element_text(margin = margin(t = 10), size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
+
+# What is the typical duration of different types of events?
+
+## Event Durations
+
+```{r}
+#| label: creating_duration_variable
+
+event_durations <- winter_olympics_26 |> 
+  
+  mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) |> 
+  
+  select(date, discipline_code, discipline_name, event_description, duration)
+```
+
+### Longest Duration Events
+
+```{r}
+#| label: longest_duration
+
+event_durations |> 
+  
+  arrange(desc(duration)) |> 
+  
+  head(20)
+```
+
+### Shortest Duration Events
+
+```{r}
+#| label: shortest_duration
+
+event_durations |> 
+  
+  arrange(duration) |> 
+  
+  head(20)
+```
+
+## Event Durations by Discipline
+
+```{r}
+#| label: event_duration_plot
+#| fig-width: 8
+#| fig-height: 6
+
+event_durations |> 
+  
+  ggplot(aes(x = duration, y = discipline_code, fill = after_stat(x))) +
+  
+  geom_density_ridges_gradient(
+    scale = 3,
+    rel_min_height = 0.01,
+    gradient_lwd = 1,
+    alpha = 0.8
+  ) +
+  
+  scale_fill_viridis_c(
+    name = "Duration (mins)",
+    option = "plasma"
+  ) +
+  
+  labs(
+    title = "Distribution of Event Durations Across Olympic Disciplines",
+    subtitle = "Milano-Cortina 2026 Winter Olympics",
+    x = "Duration (minutes)",
+    y = NULL,
+    caption = "Data: Milano-Cortina 2026 | Disciplines ordered by median duration"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0, size = 11),
+    axis.text.x = element_text(size = 10),
+    axis.title.x = element_text(margin = margin(t = 10), size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
   )
 ```
 
