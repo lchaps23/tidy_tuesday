@@ -91,7 +91,7 @@ medal_events <- winter_olympics_26 |>
 
 medal_events |> 
   
-    datatable(
+  datatable(
     
     colnames = c("Medal Event Date"  = 2,
                  "Discipline Code"   = 3,
@@ -175,7 +175,7 @@ medal_events_days |>
     plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
     plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
     
-    axis.text.y = element_text(vjust = 0, size = 11),
+    axis.text.y = element_text(vjust = 0.5, size = 11),
     axis.text.x = element_text(size = 10, angle = 90, vjust = 0.2),
     axis.title.x = element_text(margin = margin(t = 10), size = 12),
     
@@ -204,7 +204,7 @@ event_durations <- winter_olympics_26 |>
   
   mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) |> 
   
-  select(date, discipline_code, discipline_name, event_description, duration)
+  select(date, discipline_code, discipline_name, event_description, venue_code, venue_name, duration)
 ```
 
 ### Longest Duration Events
@@ -234,12 +234,16 @@ event_durations |>
 ## Event Durations by Discipline
 
 ```{r}
-#| label: event_duration_plot
+#| label: event_duration_discipline_plot
 #| fig-width: 8
 #| fig-height: 6
 
+# Ordering disciplines by their median duration
 event_durations |> 
-  
+
+  mutate(discipline_code = fct_reorder(discipline_code, duration, .fun = median, .desc = FALSE)) |> 
+
+# Creating the ridgeline plot
   ggplot(aes(x = duration, y = discipline_code, fill = after_stat(x))) +
   
   geom_density_ridges_gradient(
@@ -259,7 +263,7 @@ event_durations |>
     subtitle = "Milano-Cortina 2026 Winter Olympics",
     x = "Duration (minutes)",
     y = NULL,
-    caption = "Data: Milano-Cortina 2026 | Disciplines ordered by median duration"
+    caption = "Data: Milano-Cortina 2026"
   ) +
   
   theme_minimal(base_size = 13) +
@@ -270,6 +274,85 @@ event_durations |>
     plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
     
     axis.text.y = element_text(vjust = 0, size = 11),
+    axis.text.x = element_text(size = 10),
+    axis.title.x = element_text(margin = margin(t = 10), size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 11, face = "bold"),
+    legend.text = element_text(size = 9),
+    
+    plot.margin = margin(20, 20, 20, 20),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
+
+# Which venues host the most events?
+
+## Number of Events per Venue
+
+```{r}
+#| label: venue_events
+
+winter_olympics_26 |> 
+  
+  filter(!is.na(venue_code)) |> 
+  
+  group_by(venue_code, venue_name) |> 
+  
+  count(venue_code, venue_name) |> 
+  
+  datatable(
+    colnames = c("Venue Code" = 2,
+                 "Venue" = 3,
+                 "Events" = 4)
+  )
+```
+
+## Visualising the Number of Events per Venue
+
+```{r}
+#| label: venue_events_plot
+#| fig-width: 8
+#| fig-height: 6
+
+winter_olympics_26 |> 
+  
+  filter(!is.na(venue_code)) |> 
+  
+  count(venue_code, venue_name) |> 
+  
+  mutate(venue_code = fct_reorder(venue_code, n)) |> 
+    
+  ggplot(aes(x = n, y = venue_code)) +
+    
+  geom_col(fill = "magenta4", alpha = 0.8) +
+  
+  geom_text(aes(label = n),
+            color = "white",
+            hjust = 1.4,
+            size = 4) +
+    
+  labs(
+    title = "Distribution of Events Across Olympic Venues",
+    subtitle = "Milano-Cortina Winter Olympics 2026",
+    x = "Number of Events",
+    y = "Venue",
+    caption = "Data: Milano-Cortina 2026"
+  ) +
+    
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.subtitle = element_text(color = "grey40", size = 12, hjust = 0, margin = margin(b = 10)),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0.5, size = 11),
     axis.text.x = element_text(size = 10),
     axis.title.x = element_text(margin = margin(t = 10), size = 12),
     
