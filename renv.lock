@@ -250,6 +250,26 @@
       "Maintainer": "Martin Maechler <mmaechler+Matrix@gmail.com>",
       "Repository": "CRAN"
     },
+    "NatParksPalettes": {
+      "Package": "NatParksPalettes",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "Color Palettes Inspired by National Parks",
+      "Author": "Kevin Blake [aut, cre]",
+      "Maintainer": "Kevin Blake <kevinsblake@gmail.com>",
+      "Authors@R": "c(person(given = \"Kevin\", family = \"Blake\", role = c(\"aut\", \"cre\"), email = \"kevinsblake@gmail.com\"))",
+      "Description": "Color palettes for data visualization inspired by National Parks. Currently contains 15 color schemes and checks for colorblind-friendliness of palettes.",
+      "Imports": [
+        "ggplot2"
+      ],
+      "License": "MIT + file LICENSE",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.2.1",
+      "URL": "https://github.com/kevinsblake/NatParksPalettes",
+      "NeedsCompilation": "no",
+      "Repository": "CRAN"
+    },
     "R6": {
       "Package": "R6",
       "Version": "2.6.1",
