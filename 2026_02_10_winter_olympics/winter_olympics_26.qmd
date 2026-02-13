@@ -1,0 +1,70 @@
+---
+title: "winter_olympics"
+format: html
+theme: cosmo
+toc: true
+toc-depth: 3
+number-sections: true
+number-depth: 3
+embed-resources: true
+---
+
+```{r}
+#| include: false
+
+library(tidyverse)
+library(tidytuesdayR)
+library(DT)
+```
+
+# Getting the data
+```{r}
+#| label: get_data_function
+
+get_data <- function(date, dataset_name){
+  
+  df <- tidytuesdayR::tt_load(date)
+  
+  df[[dataset_name]]
+
+}
+```
+
+```{r}
+#| label: getting_data
+
+winter_olympics_26 <- get_data("2026-02-10", "schedule")
+```
+
+# Which sport disciplines have the most competitive events scheduled?
+
+```{r}
+#| label: events_scheduled
+
+winter_olympics_26 |> 
+  
+  filter(is_training == "FALSE") |> 
+  
+  group_by(discipline_name) |> 
+  
+  summarise(
+    events = n(),
+    medal_events = sum(is_medal_event),
+    medal_event_pct = round((medal_events / events) * 100, 1),
+    .groups = "drop"
+  ) |> 
+  
+  arrange(desc(events)) |> 
+  
+  DT::datatable(
+    
+    colnames = c("Discipline Name"        = 2,
+                 "Events Scheduled"       = 3,
+                 "Medal Events Scheduled" = 4,
+                 "Medal Events %"         = 5),
+    
+    
+  )
+
+```
+
