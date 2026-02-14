@@ -22,6 +22,8 @@ library(janitor)
 library(forcats)
 library(ggridges)
 library(NatParksPalettes)
+
+options(DT.options = list(pageLength = 10))
 ```
 
 # Getting the data
@@ -58,19 +60,28 @@ winter_olympics_26 |>
   summarise(
     events = n(),
     medal_events = sum(is_medal_event),
-    medal_event_pct = round((medal_events / events) * 100, 1),
+    medal_events_pct = round((medal_events / events), 2),
     .groups = "drop"
   ) |> 
   
-  arrange(desc(events)) |> 
+  rename(
+    "Discipline" = "discipline_name",
+    "Events" = "events",
+    "Medal Events" = "medal_events",
+    "Medal Events %" = "medal_events_pct"
+  ) |> 
+  
+  arrange(desc(Events)) |> 
   
   datatable(
     
-    colnames = c("Discipline Name"        = 2,
-                 "Events Scheduled"       = 3,
-                 "Medal Events Scheduled" = 4,
-                 "Medal Events %"         = 5)
-  )
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  ) |>
+  
+  formatPercentage("Medal Events %", 0)
 ```
 
 # How are medal events distributed across the days of the Olympics?
@@ -90,16 +101,6 @@ medal_events <- winter_olympics_26 |>
     discipline_name,
     event_description
   )
-
-medal_events |> 
-  
-  datatable(
-    
-    colnames = c("Medal Event Date"  = 2,
-                 "Discipline Code"   = 3,
-                 "Discipline Name"   = 4,
-                 "Event Description" = 5)
-  )
 ```
 
 ## Medal Events per Day
@@ -118,8 +119,17 @@ medal_events_days |>
   
   summarise(medal_events = sum(n)) |> 
   
-  rename("Date" = date,
-         "Medal Events" = medal_events)
+  rename(
+    "Date" = date,
+    "Medal Events" = medal_events
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  )
 ```
 
 ## Visualising Medal Events Distribution
@@ -206,7 +216,7 @@ event_durations <- winter_olympics_26 |>
   
   mutate(duration = as.numeric(difftime(end_time, start_time, units = "mins"))) |> 
   
-  select(date, discipline_code, discipline_name, event_description, venue_code, venue_name, duration)
+  select(date, discipline_code, event_description, venue_code, duration)
 ```
 
 ### Longest Duration Events
@@ -218,7 +228,22 @@ event_durations |>
   
   arrange(desc(duration)) |> 
   
-  head(20)
+  rename(
+    "Date" = "date",
+    "Discipline" = "discipline_code",
+    "Event" = "event_description",
+    "Venue" = "venue_code",
+    "Minutes" = "duration"
+  ) |> 
+  
+  head(20) |> 
+  
+    datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  )
 ```
 
 ### Shortest Duration Events
@@ -230,7 +255,22 @@ event_durations |>
   
   arrange(duration) |> 
   
-  head(20)
+  rename(
+    "Date" = "date",
+    "Discipline" = "discipline_code",
+    "Event" = "event_description",
+    "Venue" = "venue_code",
+    "Minutes" = "duration"
+  ) |>   
+  
+  head(20) |> 
+  
+    datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  )
 ```
 
 ## Event Durations by Discipline
@@ -305,10 +345,17 @@ winter_olympics_26 |>
   
   count(venue_code, venue_name) |> 
   
+  rename(
+    "Venue Code" = "venue_code",
+    "Venue" = "venue_name",
+    "Events" = "n"
+  ) |> 
+  
   datatable(
-    colnames = c("Venue Code" = 2,
-                 "Venue" = 3,
-                 "Events" = 4)
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
   )
 ```
 
@@ -385,13 +432,31 @@ day_events <- winter_olympics_26 |>
   summarise(
     events = n(),
     medal_events = sum(is_medal_event[TRUE]),
-    medal_pct = round((medal_events / events) * 100, 1),
+    medal_pct = round((medal_events / events), 2),
     training_events = sum(is_training[TRUE]),
-    training_pct = round((training_events / events) * 100, 1),
+    training_pct = round((training_events / events), 2),
     .groups = "drop"
   )
 
-day_events
+day_events |> 
+  
+  rename(
+    "Day" = "day",
+    "Events" = "events",
+    "Medal Events" = "medal_events",
+    "Medal %" = "medal_pct",
+    "Training Events" = "training_events",
+    "Training %" = "training_pct"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE      
+    )
+  ) |> 
+  
+  formatPercentage(c("Medal %", "Training %"), 0)
 ```
 
 ```{r}
