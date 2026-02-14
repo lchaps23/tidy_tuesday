@@ -1,0 +1,91 @@
+---
+title: "The Languages of Africa"
+format: html
+theme: cosmo
+toc: true
+toc-depth: 3
+number-sections: true
+number-depth: 3
+embed-resources: true
+dpi: 900
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(tidytuesdayR)
+library(DT)
+
+options(DT.options = list(pageLength = 10))
+```
+
+# Getting the data
+
+```{r}
+#| label: getting_data
+#| message: false
+
+source("../get_data.R")
+
+africa <- get_data("2026-01-13", "africa")
+```
+
+# Which country in Africa has the largest number of spoken languages?
+
+## Top 15
+
+```{r}
+#| label: country_no_of_languages_plot
+#| fig-width: 8
+#| fig-height: 6
+
+africa |> 
+  
+  distinct(language, country) |> 
+  
+  count(country, name = "n_languages") |> 
+  
+  arrange(desc(n_languages)) |> 
+  
+  slice_max(n_languages, n = 15) |> 
+  
+  ggplot(aes(x = reorder(country, n_languages), y = n_languages)) +
+  
+  geom_col(fill = "royalblue4") +
+  
+  geom_text(aes(label = n_languages),
+            hjust = 1.2,
+            vjust = 0.5,
+            size = 4,
+            color = "white"
+  ) +
+  
+  coord_flip() +
+  
+  labs(
+    title = "Top 15 African Countries by Number of Languages",
+    x = NULL,
+    y = "Number of Languages",
+    caption = "Data: The Languages of Africa, Wikipedia"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(vjust = 0.5, size = 11),
+    axis.text.x = element_text(size = 10, vjust = 0.2),
+    axis.title.x = element_text(margin = margin(t = 10), size = 12),
+    
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+```
