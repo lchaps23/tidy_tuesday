@@ -634,3 +634,39 @@ day_events |>
   )
 ```
 
+# What proportion of scheduled sessions are training versus competition?
+
+```{r}
+
+
+winter_olympics_26 |> 
+  
+  count(is_training) |>  
+
+  mutate(
+    is_training = recode_values(
+      is_training, 
+      TRUE ~ "Training", 
+      FALSE ~ "Competitive"
+      ),
+    prop = round(n / sum(n), 2)
+  ) |> 
+  
+  rename(
+    "Event Type" = "is_training",
+    "Total Events" = "n",
+    "Type %" = "prop"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE 
+    )
+  ) |> 
+  
+  formatPercentage("Type %", 0)
+```
+
+
+
