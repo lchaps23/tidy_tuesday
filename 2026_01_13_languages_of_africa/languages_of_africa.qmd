@@ -25,7 +25,7 @@ options(DT.options = list(pageLength = 10))
 
 ```{r}
 #| label: getting_data
-#| message: false
+#| warning: false
 
 source("../get_data.R")
 
@@ -35,13 +35,10 @@ africa <- get_data("2026-01-13", "africa")
 # Which country in Africa has the largest number of spoken languages?
 
 ## Top 15
-
 ```{r}
-#| label: country_no_of_languages_plot
-#| fig-width: 8
-#| fig-height: 6
+#| label: top_15_countries
 
-africa |> 
+top_15_countries <- africa |> 
   
   distinct(language, country) |> 
   
@@ -49,7 +46,16 @@ africa |>
   
   arrange(desc(n_languages)) |> 
   
-  slice_max(n_languages, n = 15) |> 
+  slice_max(n_languages, n = 15)
+```
+
+
+```{r}
+#| label: top_15_countries_plot
+#| fig-width: 8
+#| fig-height: 6
+
+top_15_countries |> 
   
   ggplot(aes(x = reorder(country, n_languages), y = n_languages)) +
   
@@ -89,3 +95,40 @@ africa |>
     panel.background = element_rect(fill = "white", color = NA)
   )
 ```
+
+## Diving further into Cameroon's languages
+
+```{r}
+#| label: cameroon_languages
+
+cameroon_languages <- africa |> 
+  
+  filter(country == "Cameroon") |> 
+  
+  distinct(language, family, country) |> 
+  
+  count(family, name = "family_n") |> 
+  
+  mutate(prop = round(family_n / sum(family_n), 2)) |> 
+  
+  arrange(desc(prop)) |> 
+  
+  rename(
+    "Family" = "family",
+    "Languages" = "family_n",
+    "% of Languages" = "prop"
+  )
+
+cameroon_languages |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatPercentage("% of Languages", 0)
+
+```
+
