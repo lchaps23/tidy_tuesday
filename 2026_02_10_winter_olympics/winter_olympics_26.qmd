@@ -27,21 +27,12 @@ options(DT.options = list(pageLength = 10))
 ```
 
 # Getting the data
-```{r}
-#| label: get_data_function
-
-get_data <- function(date, dataset_name){
-  
-  df <- tidytuesdayR::tt_load(date)
-  
-  df[[dataset_name]]
-
-}
-```
 
 ```{r}
 #| label: getting_data
 #| message: false
+
+source("../get_data.R")
 
 winter_olympics_26 <- get_data("2026-02-10", "schedule")
 ```
