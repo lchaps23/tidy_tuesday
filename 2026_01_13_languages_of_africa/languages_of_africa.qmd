@@ -49,7 +49,6 @@ top_15_countries <- africa |>
   slice_max(n_languages, n = 15)
 ```
 
-
 ```{r}
 #| label: top_15_countries_plot
 #| fig-width: 8
@@ -129,6 +128,38 @@ cameroon_languages |>
   ) |> 
   
   formatPercentage("% of Languages", 0)
-
 ```
+
+# Which family of languages has the highest density of speakers?
+
+```{r}
+#| label: speaker_density
+
+speaker_density <- africa |> 
+  
+  distinct(native_speakers, family) |> 
+  
+  group_by(family) |> 
+  
+  summarise(speaker_density = round((sum(native_speakers) / 1000000), 1)) |> 
+  
+  arrange(desc(speaker_density)) |> 
+  
+  slice_max(speaker_density, n = 10)
+
+speaker_density |> 
+  
+  rename(
+    "Language Family" = "family",
+    "Number of Speakers (Millions)" = "speaker_density"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  )
+```
+
 
