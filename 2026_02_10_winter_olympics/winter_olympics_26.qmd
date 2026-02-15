@@ -330,7 +330,7 @@ event_durations |>
 
 winter_olympics_26 |> 
   
-  filter(!is.na(venue_code)) |> 
+  filter_out(is.na(venue_code)) |> 
   
   group_by(venue_code, venue_name) |> 
   
@@ -359,7 +359,7 @@ winter_olympics_26 |>
 
 winter_olympics_26 |> 
   
-  filter(!is.na(venue_code)) |> 
+  filter_out(is.na(venue_code)) |> 
   
   count(venue_code, venue_name) |> 
   
