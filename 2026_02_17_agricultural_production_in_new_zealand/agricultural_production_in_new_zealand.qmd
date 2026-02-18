@@ -17,6 +17,7 @@ dpi: 900
 library(tidyverse)
 library(tidytuesdayR)
 library(DT)
+library(NatParksPalettes)
 
 options(DT.options = list(pageLength = 10))
 ```
@@ -94,6 +95,75 @@ sheep |>
     panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5)
   )
 ```
+## Other types of meat production
+
+```{r}
+#| label: all_meat
+
+all_meat <- df |> 
+  
+  filter(measure %in% c(
+    "Total Beef Cattle",
+    "Total Pigs",
+    "Total goats",
+    "Total Deer",
+    "Total poultry"
+  )) |> 
+  
+  select(-c(value_unit, value_label)) |> 
+  
+  mutate(value = round(value / 1000000, 1),
+         measure = replace_values(
+           measure,
+           "Total Beef Cattle" ~ "Cattle",
+           "Total Pigs"        ~ "Pigs",
+           "Total goats"       ~ "Goats",
+           "Total Deer"        ~ "Deer",
+           "Total poultry"     ~ "Poultry"
+         ))
+```
+
+```{r}
+all_meat |>
+  
+  ggplot(aes(x = year_ended_june, y = value, color = measure)) +
+  
+  geom_line() +
+  
+  geom_point(size = 1.5,
+             aes(shape = measure)) +
+  
+  scale_color_manual(values = natparks.pals("DeathValley", 6)) +
+  
+  labs(
+    title = "New Zealand's Alternative Livestock Production",
+    x = NULL,
+    y = "Total Units (Millions)",
+    caption = "Data: StatsNZ",
+    color = "Livestock Type:",
+    shape = "Livestock Type:"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10, vjust = 0.2),
+    axis.title.y = element_text(size = 10),
+    
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid.major.y = element_line(color = "grey90", linewidth = 0.3),
+    
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5),
+    
+    legend.position = "top",
+    legend.justification = "left"
   )
 ```
 
