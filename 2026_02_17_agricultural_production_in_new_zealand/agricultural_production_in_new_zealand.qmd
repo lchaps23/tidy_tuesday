@@ -37,8 +37,7 @@ df <- get_data("2026-02-17", "dataset")
 ## Sheep decline
 
 ```{r}
-
-
+#| label: sheep_only
 
 sheep <- df |> 
   
@@ -50,17 +49,27 @@ sheep <- df |>
 ```
 
 ```{r}
-sheep |> 
+#| label: plotting_sheep_only
+
+sheep |>
   
   ggplot(aes(x = year_ended_june, y = value)) +
   
+  annotate(
+    "rect",
+    xmin = 1983, xmax = 2024,
+    ymin = -Inf, ymax = 70.3,
+    alpha = 0.2,
+    fill = "red"
+  ) +
+  
   geom_line(colour = "royalblue4") +
   
-  geom_point(size = 1,
+  geom_point(size = 2,
              colour = "royalblue4") +
   
   labs(
-    title = "New Zealand's Sheep Population Decline",
+    title = "New Zealand's Sheep Population Decline since 1983",
     x = NULL,
     y = "Total Sheep (Millions)",
     caption = "Data: StatsNZ"
@@ -69,19 +78,22 @@ sheep |>
   theme_minimal(base_size = 13) +
   
   theme(
-    plot.title = element_text(face = "bold", size = 16, hjust = 0),
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
     plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
     
-    axis.text.y = element_text(vjust = 0.5, size = 10),
+    axis.text.y = element_text(size = 10),
     axis.text.x = element_text(size = 10, vjust = 0.2),
-    axis.title.y = element_text(size = 12),
+    axis.title.y = element_text(size = 10),
     
-    panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank(),
     panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid.major.y = element_line(color = "grey90", linewidth = 0.3),
     
     plot.background = element_rect(fill = "white", color = NA),
-    panel.background = element_rect(fill = "white", color = NA)
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5)
+  )
+```
   )
 ```
 
