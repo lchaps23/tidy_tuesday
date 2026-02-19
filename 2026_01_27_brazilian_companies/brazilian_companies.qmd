@@ -1,0 +1,40 @@
+---
+title: "Brazilian Companies"
+format: html
+theme: cosmo
+toc: true
+toc-depth: 3
+number-sections: true
+number-depth: 3
+embed-resources: true
+dpi: 900
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(tidytuesdayR)
+library(DT)
+library(NatParksPalettes)
+
+options(DT.options = list(pageLength = 10))
+```
+
+# Getting the data
+
+```{r}
+#| label: getting_data
+#| warning: false
+
+source("../get_data.R")
+
+companies <- get_data("2026-01-27", "companies")
+legal_nature <- get_data("2026-01-27", "legal_nature")
+qualifications <- get_data("2026-01-27", "qualifications")
+size <- get_data("2026-01-27", "size")
+```
+
+# Which legal nature categories concentrate the highest total and average stock capital?
+
