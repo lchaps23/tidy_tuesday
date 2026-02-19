@@ -167,3 +167,141 @@ all_meat |>
   )
 ```
 
+# Which agricultural industries have shown the most production growth?
+
+```{r}
+#| label: growth_summary
+#| warning: false
+
+growth_summary <- df |> 
+  
+  group_by(measure, value_label) |> 
+  
+  arrange(year_ended_june, .by_group = TRUE) |> 
+  
+  summarise(
+    start_value = first(value),
+    end_value   = last(value),
+    n_years     = n() - 1,
+    abs_growth  = end_value - start_value,
+    pct_growth  = ((end_value - start_value) / start_value),
+    cagr        = ((end_value / start_value) ^ (1 / n_years) - 1)
+  ) |> 
+  
+  ungroup()
+```
+## Absolute Growth
+
+```{r}
+#| label: top_10_abs_growth
+
+growth_summary |> 
+  
+  select(
+    measure,
+    value_label,
+    n_years,
+    start_value,
+    end_value,
+    abs_growth
+  ) |> 
+  
+  slice_max(abs_growth, n = 10) |> 
+  
+  mutate(
+    start_value = round(start_value / 1000000, 2),
+    end_value   = round(end_value / 1000000, 2),
+    abs_growth  = round(abs_growth / 1000000, 2)
+  ) |> 
+  
+  rename(
+    "Measure"             = "measure",
+    "Unit"                = "value_label",
+    "Initial Value (m)"   = "start_value",
+    "Current Value (m)"   = "end_value",
+    "Years Measured"      = "n_years",
+    "Absolute Growth (m)" = "abs_growth"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  )
+```
+
+## Relative Growth
+
+```{r}
+#| label: top_10_pct_growth
+
+growth_summary |> 
+  
+  select(
+    measure,
+    value_label,
+    n_years,
+    start_value,
+    end_value,
+    pct_growth
+  ) |> 
+  
+  slice_max(pct_growth, n = 10) |> 
+  
+  rename(
+    "Measure"         = "measure",
+    "Unit"            = "value_label",
+    "Initial Value"   = "start_value",
+    "Current Value"   = "end_value",
+    "Years Measured"  = "n_years",
+    "Relative Growth" = "pct_growth"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatPercentage("Relative Growth", digits = 0)
+```
+
+## CAGR
+
+```{r}
+#| label: top_10_cagr
+
+growth_summary |> 
+  
+  select(
+    measure,
+    value_label,
+    n_years,
+    start_value,
+    end_value,
+    cagr
+  ) |> 
+  
+  slice_max(cagr, n = 10) |> 
+  
+  rename(
+    "Measure"         = "measure",
+    "Unit"            = "value_label",
+    "Initial Value"   = "start_value",
+    "Current Value"   = "end_value",
+    "Years Measured"  = "n_years",
+    "CAGR"            = "cagr"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatPercentage("CAGR", digits = 0)
+```
+
