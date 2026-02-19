@@ -30,11 +30,53 @@ options(DT.options = list(pageLength = 10))
 
 source("../get_data.R")
 
-companies <- get_data("2026-01-27", "companies")
-legal_nature <- get_data("2026-01-27", "legal_nature")
+companies      <- get_data("2026-01-27", "companies")
+legal_nature   <- get_data("2026-01-27", "legal_nature")
 qualifications <- get_data("2026-01-27", "qualifications")
-size <- get_data("2026-01-27", "size")
+size           <- get_data("2026-01-27", "size")
 ```
 
 # Which legal nature categories concentrate the highest total and average stock capital?
+
+```{r}
+#| label: stock_capital_legal_nature
+
+ln_stock_capital <- companies |> 
+  
+  group_by(legal_nature) |> 
+  
+  summarise(
+    companies       = n(),
+    total_cap_stock = sum(capital_stock),
+    mean_cap_stock  = mean(capital_stock),
+    med_cap_stock   = median(capital_stock)
+  ) |> 
+  
+  arrange(desc(mean_cap_stock)) |> 
+  
+  rename(
+    "Legal Nature"         = "legal_nature",
+    "Companies"            = "companies",
+    "Total Capital Stock"  = "total_cap_stock",
+    "Mean Capital Stock"   = "mean_cap_stock",
+    "Median Capital Stock" = "med_cap_stock"
+  )
+
+ln_stock_capital |> 
+  
+  datatable(
+    options = list(
+      autowidth    = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatCurrency(
+    columns  = c("Total Capital Stock",
+                 "Mean Capital Stock",
+                 "Median Capital Stock"),
+    currency = "R$",
+    digits   = 2
+  )
+```
 
