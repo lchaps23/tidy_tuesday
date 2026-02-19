@@ -51,6 +51,8 @@ sheep <- df |>
 
 ```{r}
 #| label: plotting_sheep_only
+#| fig-width: 8
+#| fig-height: 6
 
 sheep |>
   
@@ -70,7 +72,7 @@ sheep |>
              colour = "royalblue4") +
   
   labs(
-    title = "New Zealand's Sheep Population Decline since 1983",
+    title = "New Zealand's Decline in Sheep Population since 1983",
     x = NULL,
     y = "Total Sheep (Millions)",
     caption = "Data: StatsNZ"
@@ -124,6 +126,10 @@ all_meat <- df |>
 ```
 
 ```{r}
+#| label: all_meat_plot
+#| fig-width: 8
+#| fig-height: 6
+
 all_meat |>
   
   ggplot(aes(x = year_ended_june, y = value, color = measure)) +
