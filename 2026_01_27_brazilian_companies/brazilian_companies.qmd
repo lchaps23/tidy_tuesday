@@ -18,6 +18,8 @@ library(tidyverse)
 library(tidytuesdayR)
 library(DT)
 library(NatParksPalettes)
+library(ggridges)
+library(scales)
 
 options(DT.options = list(pageLength = 10))
 ```
@@ -52,7 +54,9 @@ ln_stock_capital <- companies |>
     med_cap_stock   = median(capital_stock)
   ) |> 
   
-  arrange(desc(mean_cap_stock)) |> 
+  arrange(desc(mean_cap_stock))
+
+ln_stock_capital |> 
   
   rename(
     "Legal Nature"         = "legal_nature",
@@ -60,9 +64,7 @@ ln_stock_capital <- companies |>
     "Total Capital Stock"  = "total_cap_stock",
     "Mean Capital Stock"   = "mean_cap_stock",
     "Median Capital Stock" = "med_cap_stock"
-  )
-
-ln_stock_capital |> 
+  ) |> 
   
   datatable(
     options = list(
@@ -78,5 +80,78 @@ ln_stock_capital |>
     currency = "R$",
     digits   = 2
   )
+```
+
+# How does company size relate to capital stock (and how skewed is it)?
+
+```{r}
+#| label: company_sizes
+
+company_size_stock <- companies |> 
+  
+  group_by(company_size) |> 
+  
+  summarise(
+    companies = n(),
+    total_cap_stock = sum(capital_stock),
+    mean_cap_stock  = mean(capital_stock),
+    med_cap_stock   = median(capital_stock) 
+  ) |> 
+  
+  arrange(desc(mean_cap_stock))
+  
+company_size_stock |> 
+  
+  rename(
+    "Company Size"         = "company_size",
+    "Companies"            = "companies",
+    "Total Capital Stock"  = "total_cap_stock",
+    "Mean Capital Stock"   = "mean_cap_stock",
+    "Median Capital Stock" = "med_cap_stock"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth    = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatCurrency(
+    columns  = c("Total Capital Stock",
+                 "Mean Capital Stock",
+                 "Median Capital Stock"),
+    currency = "R$",
+    digits   = 2
+  )
+```
+
+```{r}
+
+ggplot(companies, 
+       aes(x = capital_stock, 
+           y = company_size, 
+           fill = company_size)
+      ) +
+  
+  geom_density_ridges(
+    alpha = 0.7,
+    scale = 0.9
+  ) +
+  
+  scale_x_log10(
+    labels = label_number(scale = 1e-9, suffix = "B")
+  ) +
+  
+  labs(
+    x = "Capital Stock (Billions, log scale)",
+    y = "Company Size",
+    title = "Distribution of Capital Stock by Company Size"
+  ) +
+  
+  theme_minimal() +
+  
+  theme(legend.position = "none")
+
 ```
 
