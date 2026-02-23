@@ -127,6 +127,7 @@ company_size_stock |>
 ```
 
 ```{r}
+#| label: company_sizes_distribution_plot
 
 ggplot(companies, 
        aes(x = capital_stock, 
@@ -168,7 +169,7 @@ ggplot(companies,
     x     = "Capital Stock (Billions, log scale)",
     y     = "Company Size",
     title = "Distribution of Capital Stock by Company Size",
-    caption = "Red dashed = mean | Blue dashed = median"
+    caption = "Blue dashed = median  |  Red dashed = mean | "
   ) +
   
   theme_minimal() +
