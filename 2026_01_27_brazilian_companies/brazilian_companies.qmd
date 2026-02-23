@@ -131,22 +131,44 @@ company_size_stock |>
 ggplot(companies, 
        aes(x = capital_stock, 
            y = company_size, 
-           fill = company_size)
-      ) +
+           fill = company_size)) +
   
   geom_density_ridges(
-    alpha = 0.7,
+    alpha = 0.7, 
     scale = 0.9
   ) +
   
-  scale_x_log10(
-    labels = label_number(scale = 1e-9, suffix = "B")
+  geom_segment(
+    data = company_size_stock,
+    aes(x = mean_cap_stock, 
+        xend = mean_cap_stock,
+        y = as.numeric(factor(company_size)),
+        yend = as.numeric(factor(company_size)) + 0.9),
+    colour = "red", 
+    linetype = "dashed", 
+    linewidth = 0.7,
+    inherit.aes = FALSE
   ) +
   
+  geom_segment(
+    data = company_size_stock,
+    aes(x = med_cap_stock, 
+        xend = med_cap_stock,
+        y = as.numeric(factor(company_size)),
+        yend = as.numeric(factor(company_size)) + 0.9),
+    colour = "blue", 
+    linetype = "dashed", 
+    linewidth = 0.7,
+    inherit.aes = FALSE
+  ) +
+  
+  scale_x_log10(labels = label_number(scale = 1e-9, suffix = "B")) +
+  
   labs(
-    x = "Capital Stock (Billions, log scale)",
-    y = "Company Size",
-    title = "Distribution of Capital Stock by Company Size"
+    x     = "Capital Stock (Billions, log scale)",
+    y     = "Company Size",
+    title = "Distribution of Capital Stock by Company Size",
+    caption = "Red dashed = mean | Blue dashed = median"
   ) +
   
   theme_minimal() +
