@@ -178,3 +178,73 @@ ggplot(companies,
 
 ```
 
+# Do specific owner qualification groups dominate high-capital companies?
+
+```{r}
+#| label: high_stock_companies
+
+high_stock_companies <- companies |> 
+  
+  filter(capital_stock >= quantile(capital_stock, 0.9))
+
+owner_quals_high_stock <- high_stock_companies |> 
+  
+  group_by(owner_qualification) |> 
+  
+  summarise(
+    companies = n(),
+    total_cap_stock = sum(capital_stock),
+    mean_cap_stock  = mean(capital_stock),
+    med_cap_stock   = median(capital_stock) 
+  ) |> 
+  
+  arrange(desc(companies))
+  
+owner_quals_high_stock |> 
+  
+  rename(
+    "Owner Qualification"  = "owner_qualification",
+    "Companies"            = "companies",
+    "Total Capital Stock"  = "total_cap_stock",
+    "Mean Capital Stock"   = "mean_cap_stock",
+    "Median Capital Stock" = "med_cap_stock"
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth    = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatCurrency(
+    columns  = c("Total Capital Stock",
+                 "Mean Capital Stock",
+                 "Median Capital Stock"),
+    currency = "R$",
+    digits   = 2
+  )
+```
+
+```{r}
+
+ggplot(high_stock_companies,
+       aes(x = capital_stock,
+           y = reorder(owner_qualification, capital_stock, median),
+           fill = owner_qualification)) +
+  
+  geom_density_ridges(alpha = 0.7, scale = 0.9) +
+  
+  scale_x_log10(labels = label_number(scale = 1e-9, suffix = "B")) +
+  
+  labs(
+    x     = "Capital Stock (Billions, log scale)",
+    y     = "Owner Qualification",
+    title = "Capital Stock Distribution by Owner Qualification",
+    subtitle = "Top 10% of companies by capital stock"
+  ) +
+  
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
