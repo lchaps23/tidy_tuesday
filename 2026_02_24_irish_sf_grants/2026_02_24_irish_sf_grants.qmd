@@ -1,0 +1,135 @@
+---
+title: "Science Foundation Ireland Grants Commitments"
+format: html
+theme: cosmo
+toc: true
+toc-depth: 3
+number-sections: true
+number-depth: 3
+embed-resources: true
+dpi: 900
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(DT)
+library(ggridges)
+library(scales)
+
+options(DT.options = list(pageLength = 10))
+```
+
+# Getting the data
+
+```{r}
+#| label: getting_data
+#| warning: false
+
+source("../get_data.R")
+
+sfi_grants <- get_data("2026-02-24", "sfi_grants")
+
+```
+
+# Which Higher Education Institute received the most grant funding?
+
+```{r}
+#| label: most_funding
+
+hei_funding <- sfi_grants |> 
+  
+  group_by(research_body) |> 
+  
+  summarise(
+    proposals    = n_distinct(proposal_id),
+    total_commit = sum(current_total_commitment),
+    mean_commit = mean(current_total_commitment),
+    med_commit  = median(current_total_commitment)
+  )
+
+hei_funding |> 
+  
+  slice_max(order_by = total_commit, n = 10) |> 
+  
+  rename(
+    "Research Body"          = "research_body",
+    "Proposals"              = "proposals",
+    "Total Committed"        = "total_commit",
+    "Mean Committed"         = "mean_commit",
+    "Median Committed"       = "med_commit" 
+  ) |> 
+  
+  datatable(
+    options = list(
+      autowidth    = TRUE,
+      orderClasses = TRUE
+    )
+  ) |> 
+  
+  formatCurrency(c("Total Committed",
+                   "Mean Committed",
+                   "Median Committed"),
+                 currency = "€",
+                 digits   = 2
+                 )
+```
+
+
+```{r}
+
+top_10 <- hei_funding |> 
+  
+  slice_max(order_by = total_commit, n = 10) |> 
+  
+  pull(research_body)
+
+sfi_grants |> 
+  
+  filter(research_body %in% top_10) |> 
+  
+  ggplot(aes(x = current_total_commitment, 
+             y = research_body)) +
+  
+  geom_density_ridges(alpha = 0.7, scale = 0.9) +
+  
+  geom_segment(
+    data = hei_funding |> filter(research_body %in% top_10),
+    aes(x    = mean_commit, 
+        xend = mean_commit,
+        y    = as.numeric(factor(research_body)),
+        yend = as.numeric(factor(research_body)) + 0.9),
+    colour    = "red", 
+    linetype  = "dashed", 
+    linewidth = 0.7,
+    inherit.aes = FALSE
+  ) +
+  
+  geom_segment(
+    data = hei_funding |> filter(research_body %in% top_10),
+    aes(x    = med_commit, 
+        xend = med_commit,
+        y    = as.numeric(factor(research_body)),
+        yend = as.numeric(factor(research_body)) + 0.9),
+    colour    = "blue", 
+    linetype  = "dashed", 
+    linewidth = 0.7,
+    inherit.aes = FALSE
+  ) +
+  
+  scale_x_log10(labels = scales::label_currency(prefix = "€")) +
+  
+  labs(
+    x       = "Total Commitment (€)",
+    y       = NULL,
+    title   = "Distribution of Funding by Research Body (Top 10)",
+    caption = "Blue dashed = median  |  Red dashed = mean"
+  ) +
+  
+  theme_minimal() +
+  
+  theme(legend.position = "none")
+```
+
