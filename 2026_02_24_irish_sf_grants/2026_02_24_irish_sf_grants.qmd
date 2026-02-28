@@ -18,6 +18,7 @@ library(tidyverse)
 library(DT)
 library(ggridges)
 library(scales)
+library(lubridate)
 
 options(DT.options = list(pageLength = 10))
 ```
@@ -46,8 +47,8 @@ hei_funding <- sfi_grants |>
   summarise(
     proposals    = n_distinct(proposal_id),
     total_commit = sum(current_total_commitment),
-    mean_commit = mean(current_total_commitment),
-    med_commit  = median(current_total_commitment)
+    mean_commit  = mean(current_total_commitment),
+    med_commit   = median(current_total_commitment)
   )
 
 hei_funding |> 
@@ -79,6 +80,10 @@ hei_funding |>
 
 
 ```{r}
+#| label: top_10_funding
+#| warning: false
+#| fig-width: 8
+#| fig-height: 6
 
 top_10 <- hei_funding |> 
   
@@ -90,10 +95,15 @@ sfi_grants |>
   
   filter(research_body %in% top_10) |> 
   
-  ggplot(aes(x = current_total_commitment, 
-             y = research_body)) +
+  ggplot(
+    aes(x = current_total_commitment, 
+        y = research_body)
+  ) +
   
-  geom_density_ridges(alpha = 0.7, scale = 0.9) +
+  geom_density_ridges(
+    alpha = 0.7, 
+    scale = 0.9
+  ) +
   
   geom_segment(
     data = hei_funding |> filter(research_body %in% top_10),
@@ -108,7 +118,8 @@ sfi_grants |>
   ) +
   
   geom_segment(
-    data = hei_funding |> filter(research_body %in% top_10),
+    data = hei_funding |> 
+      filter(research_body %in% top_10),
     aes(x    = med_commit, 
         xend = med_commit,
         y    = as.numeric(factor(research_body)),
@@ -121,15 +132,121 @@ sfi_grants |>
   
   scale_x_log10(labels = scales::label_currency(prefix = "€")) +
   
+  scale_y_discrete(labels = label_wrap(20)) +
+  
   labs(
-    x       = "Total Commitment (€)",
-    y       = NULL,
-    title   = "Distribution of Funding by Research Body (Top 10)",
-    caption = "Blue dashed = median  |  Red dashed = mean"
+    x        = "Total Commitment",
+    y        = NULL,
+    title    = "Distribution of Funding by Research Body (Top 10)",
+    subtitle = "Blue dashed = median  |  Red dashed = mean",
+     caption = "Source: www.data.gov.ie"
   ) +
   
-  theme_minimal() +
+  theme_minimal(base_size = 13) +
   
-  theme(legend.position = "none")
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    plot.title.position = "plot",
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10, vjust = 0.2),
+    axis.title.y = element_text(size = 10),
+    
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid.major.y = element_line(color = "grey90", linewidth = 0.3),
+    
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5),
+    
+    legend.position = "none"
+  )
+```
+
+# How much did Science Foundation Ireland invest into research each year?
+
+```{r}
+#| label: funding_per_year
+
+funding_year <- sfi_grants |> 
+  
+  group_by(
+    year = year(start_date) 
+  ) |> 
+  
+  summarise(investment = sum(current_total_commitment),
+            .groups    = "drop"
+  ) |> 
+  
+  arrange(year)
+```
+
+```{r}
+#| label: funding_per_year_plot
+#| fig-width: 8
+#| fig-height: 6
+
+set.seed(1)
+
+funding_year |> 
+  
+  filter(year < 2025) |> 
+  
+  ggplot(
+    aes(x = year,
+        y = investment)
+  ) +
+  
+  geom_line(
+    linewidth = 0.8,
+    color     = "royalblue4"
+  ) +
+  
+  geom_point(
+    shape = 21,
+    fill  = "white",
+    color = "royalblue4",
+    stroke = 1.2
+  ) +
+  
+  scale_x_continuous(
+    breaks = scales::breaks_width(1),
+    expand = expansion(mult = 0.05)
+  ) +
+   
+  scale_y_continuous(labels = label_currency(
+    prefix = "€",
+    suffix = "M",
+    scale  = 1e-6
+  )) +
+  
+  labs(
+    x     = NULL,
+    y     = "Investment",
+    title = "Investment per Year",
+    caption = "Source: www.data.gov.ie"
+  ) +
+  
+  theme_minimal(base_size = 13) +
+  
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    plot.title.position = "plot",
+    plot.caption = element_text(color = "grey50", size = 9, hjust = 1),
+    
+    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10, vjust = 0.2, angle = 90),
+    axis.title.y = element_text(size = 10),
+    
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "grey90", linewidth = 0.3),
+    panel.grid.major.y = element_line(color = "grey90", linewidth = 0.3),
+    
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5),
+  )
 ```
 
