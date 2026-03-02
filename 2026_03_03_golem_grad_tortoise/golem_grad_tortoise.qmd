@@ -1,0 +1,49 @@
+---
+title: "Golem Grad Tortoise Data"
+format: html
+theme: cosmo
+toc: true
+toc-depth: 3
+number-sections: true
+number-depth: 3
+embed-resources: true
+dpi: 900
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+
+options(DT.options = list(pageLength = 10))
+```
+
+# Getting the data
+
+```{r}
+#| label: getting_data
+#| warning: false
+#| message: false
+
+source("../get_data.R")
+
+clutch_size <- get_data("2026-03-03", "clutch_size_cleaned")
+tortoise_body_condition <- get_data("2026-03-03", "tortoise_body_condition_cleaned")
+
+```
+
+# Do recaptures happen more often in spring or summer?
+
+```{r}
+#| label: recapture_season_count
+
+tortoise_body_condition |> 
+  
+  filter_out(year_recode == 1) |> 
+  
+  count(season) |> 
+  
+  mutate(proportion = round(n / sum(n), 2))
+```
+
