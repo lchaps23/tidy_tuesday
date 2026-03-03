@@ -15,8 +15,9 @@ dpi: 900
 #| include: false
 
 library(tidyverse)
+library(gt)
+library(scales)
 
-options(DT.options = list(pageLength = 10))
 ```
 
 # Getting the data
