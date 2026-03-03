@@ -45,6 +45,37 @@ tortoise_body_condition |>
   
   count(season) |> 
   
-  mutate(proportion = round(n / sum(n), 2))
+  mutate(proportion = percent(n / sum(n))) |> 
+  
+  gt() |> 
+  
+  tab_header(
+    title    = "Tortoise Recaptures by Season",
+    subtitle = "Excluding first-year captures"
+  ) |> 
+  
+  cols_label(
+    season     = "Season",
+    n          = "Recaptures",
+    proportion = "Proportion"
+  ) |> 
+  
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  ) |> 
+  
+  tab_style(
+    style     = cell_fill(color = "#d4edda"),
+    locations = cells_body(rows = n == max(n))
+  ) |> 
+  
+  fmt_number(
+    columns = n,
+    decimals = 0
+  )
+
+```
+
 ```
 
